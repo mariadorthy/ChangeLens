@@ -2,5 +2,5 @@ from backend.models.task import Task
 
 
 def get_tasks() -> list[dict]:
-    """Return the demo task collection."""
+    """Return the demo task collection for the Phase 4 complete scenario."""
     return [Task(id=1, title="Prepare Phase 4 final demo", completed=False).to_dict()]

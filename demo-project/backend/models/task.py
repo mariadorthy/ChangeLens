@@ -8,4 +8,5 @@ class Task:
     completed: bool
 
     def to_dict(self) -> dict:
+        """Return the task as a JSON-ready dictionary."""
         return asdict(self)
