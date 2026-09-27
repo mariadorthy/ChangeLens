@@ -1,8 +1,7 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
-from backend.app.api.routes import router as api_router
-
+from .api.routes import router as api_router
 
 app = FastAPI(title="ChangeLens API", version="0.1.0")
 
