@@ -2,7 +2,8 @@
 
 This document is our index for the final ChangeLens submission assets.
 
-The `README.md` explains the product and how to reproduce it. `docs/architecture.md` explains the technical architecture. The presentation deck and demo video remain separate submission artifacts so that each asset has a clear purpose.
+The `README.md` explains the product and how to reproduce it. `docs/architecture.md` explains the technical architecture. The presentation deck is retained in `docs/assets/`, while the demo video is submitted separately through the hackathon platform. Each asset has a clear purpose.
+
 ---
 
 ## Project Identity
@@ -23,7 +24,7 @@ The final submission consists of the following artifacts:
 | ---------------------- | --------------------------------------------------------------------- | --------------------------- |
 | `README.md`            | Product explanation, workflow, reproduction, testing, and limitations | Ready                       |
 | `docs/architecture.md` | Technical architecture and data flow                                  | Ready                       |
-| Presentation deck      | Judge-facing product story and engineering evidence                   | Prepared separately         |
+| Presentation deck | Judge-facing product story and engineering evidence | Ready |
 | Demo video             | Three-minute product demonstration                                    | Prepared separately         |
 | Cover image            | Submission branding / thumbnail                                       | Ready        |
 | Product screenshots    | Visual evidence of the working dashboard                              | Ready                       |

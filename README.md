@@ -8,6 +8,13 @@ We built ChangeLens as a developer workflow tool to answer a practical question:
 
 Instead of only showing which files changed between two Git revisions, ChangeLens discovers related repository artifacts and identifies relationships that may require follow-up attention.
 
+## Demo Video
+
+🎥 **ChangeLens Demo:** [Watch the 2-3 minute demo video](https://canva.link/1f4i04vwug4stfc)
+
+The video demonstrates the complete ChangeLens workflow:
+change detection → relationship discovery → completeness analysis → developer action.
+
 ---
 
 ## Problem
