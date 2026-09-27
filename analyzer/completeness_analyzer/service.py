@@ -209,12 +209,13 @@ def analyze_completeness(
         else "complete"
     )
 
+    all_affected = tuple(affected_and_changed) + missing_tuple
     return CompletenessReport(
         status=status,
         changed_files=changed_files,
         affected_and_changed=tuple(affected_and_changed),
         potentially_missing=missing_tuple,
-        validation_recommendations=_recommendations(missing_tuple),
+        validation_recommendations=_recommendations(all_affected),
     )
 
 

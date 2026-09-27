@@ -689,3 +689,342 @@ def test_completeness_deleted_artifact_is_not_automatically_missing() -> None:
 
     assert report.status == "complete"
     assert report.potentially_missing == ()
+
+
+def test_completeness_co_deleted_related_artifact_is_not_reported_as_missing() -> None:
+    """A related artifact that is also deleted in the same change set must not
+    appear in potentially_missing.  Previously the existing deleted-file guard
+    (lines 181-186 of completeness_analyzer/service.py) was only exercised
+    through the self-referential case (deleted file whose relationship points
+    back to itself).  This test exercises the cross-file variant: module.py is
+    deleted AND tests/test_module.py is also deleted; the impact report names
+    tests/test_module.py as a relationship of module.py, so without the guard
+    it would be misclassified as potentially_missing."""
+    change_set = _phase4_change_set(
+        _phase4_changed_file("module.py", status="deleted"),
+        _phase4_changed_file("tests/test_module.py", status="deleted"),
+    )
+
+    impact_report = _phase4_impact_report(
+        "module.py",
+        _phase4_relationship(
+            "tests/test_module.py",
+            "test",
+            reason="Imports Python module represented by module.py",
+        ),
+    )
+
+    report = analyze_completeness(change_set, impact_report)
+
+    assert report.status == "complete"
+    assert report.potentially_missing == ()
+    assert report.affected_and_changed == ()
+
+
+def test_completeness_multiple_changed_files_sharing_one_artifact_changed() -> None:
+    """Two changed files each discover the same related artifact via different
+    relationship types.  When that artifact is also changed the completeness
+    engine must merge both relationships into a single affected_and_changed
+    entry and must NOT report it as potentially_missing (Case 3 + Case 5)."""
+    change_set = _phase4_change_set(
+        _phase4_changed_file("service_a.py"),
+        _phase4_changed_file("service_b.py"),
+        _phase4_changed_file("tests/test_shared.py"),
+    )
+
+    impact_report = ImpactReport(
+        repository="test-repository",
+        changed_files=(
+            ImpactResult(
+                changed_file="service_a.py",
+                relationships=(
+                    _phase4_relationship(
+                        "tests/test_shared.py",
+                        "test",
+                        reason="Imports service_a",
+                    ),
+                ),
+            ),
+            ImpactResult(
+                changed_file="service_b.py",
+                relationships=(
+                    _phase4_relationship(
+                        "tests/test_shared.py",
+                        "reference",
+                        reason="References service_b",
+                        confidence="medium",
+                    ),
+                ),
+            ),
+        ),
+    )
+
+    report = analyze_completeness(change_set, impact_report)
+
+    assert report.status == "complete"
+    assert report.potentially_missing == ()
+    assert len(report.affected_and_changed) == 1
+
+    artifact = report.affected_and_changed[0]
+
+    assert artifact.path == "tests/test_shared.py"
+    assert artifact.relationship_types == ("reference", "test")
+    assert artifact.reasons == ("Imports service_a", "References service_b")
+    assert set(artifact.confidences) == {"high", "medium"}
+
+
+def test_completeness_mixed_some_related_changed_some_missing() -> None:
+    """One changed file has two related artifacts: one that was also changed
+    (should appear in affected_and_changed) and one that was not (should appear
+    in potentially_missing).  Status must be potentially_incomplete and
+    recommendations must cover both the affected_and_changed and
+    potentially_missing relationship types (Case 6)."""
+    change_set = _phase4_change_set(
+        _phase4_changed_file("backend/services/task_service.py"),
+        _phase4_changed_file("tests/test_task_service.py"),
+        # docs/tasks.md intentionally NOT changed
+    )
+
+    impact_report = ImpactReport(
+        repository="test-repository",
+        changed_files=(
+            ImpactResult(
+                changed_file="backend/services/task_service.py",
+                relationships=(
+                    _phase4_relationship(
+                        "tests/test_task_service.py",
+                        "test",
+                        reason="Imports the changed Python module",
+                        confidence="high",
+                    ),
+                    _phase4_relationship(
+                        "docs/tasks.md",
+                        "documentation",
+                        reason="Documents the changed service",
+                        confidence="medium",
+                    ),
+                ),
+            ),
+        ),
+    )
+
+    report = analyze_completeness(change_set, impact_report)
+
+    assert report.status == "potentially_incomplete"
+
+    assert len(report.affected_and_changed) == 1
+    assert report.affected_and_changed[0].path == "tests/test_task_service.py"
+
+    assert len(report.potentially_missing) == 1
+    missing = report.potentially_missing[0]
+    assert missing.path == "docs/tasks.md"
+    assert missing.relationship_types == ("documentation",)
+    assert missing.confidences == ("medium",)
+
+    # Recommendations now cover all discovered relationships, including those
+    # for artifacts that were already changed — both the test (affected_and_changed,
+    # type=test) and the docs (potentially_missing, type=documentation).
+    assert "Review affected documentation" in report.validation_recommendations
+    assert "Run related tests" in report.validation_recommendations
+
+
+
+def test_completeness_complete_change_includes_recommendations_for_affected_artifacts() -> None:
+    """When all related artifacts were also changed (status == complete),
+    validation_recommendations must still include actions derived from those
+    affected_and_changed relationship types.
+
+    Previously, recommendations were generated only from potentially_missing
+    artifacts, so a fully-complete change always returned an empty
+    recommendation list — silently dropping actionable guidance such as
+    'Run related tests' even when the developer changed the test file."""
+    change_set = _phase4_change_set(
+        _phase4_changed_file("backend/services/task_service.py"),
+        _phase4_changed_file("tests/test_task_service.py"),
+    )
+
+    impact_report = _phase4_impact_report(
+        "backend/services/task_service.py",
+        _phase4_relationship(
+            "tests/test_task_service.py",
+            "test",
+            reason="Test imports the changed Python module",
+        ),
+    )
+
+    report = analyze_completeness(change_set, impact_report)
+
+    assert report.status == "complete"
+    assert report.potentially_missing == ()
+    # The test was changed — no missing work — but running it is still required.
+    assert "Run related tests" in report.validation_recommendations
+
+
+def test_completeness_mixed_recommendations_cover_both_affected_and_missing() -> None:
+    """When some related artifacts were changed and others were not, the
+    validation_recommendations must include guidance derived from both
+    affected_and_changed and potentially_missing relationship types.
+
+    In the scenario below: the test file was changed (affected_and_changed,
+    type=test) and the docs were NOT changed (potentially_missing,
+    type=documentation).  Both 'Run related tests' and
+    'Review affected documentation' must appear."""
+    change_set = _phase4_change_set(
+        _phase4_changed_file("backend/services/task_service.py"),
+        _phase4_changed_file("tests/test_task_service.py"),
+        # docs/tasks.md intentionally NOT changed
+    )
+
+    impact_report = _phase4_impact_report(
+        "backend/services/task_service.py",
+        _phase4_relationship(
+            "tests/test_task_service.py",
+            "test",
+            reason="Test imports the changed Python module",
+            confidence="high",
+        ),
+        _phase4_relationship(
+            "docs/tasks.md",
+            "documentation",
+            reason="Documents the changed service",
+            confidence="medium",
+        ),
+    )
+
+    report = analyze_completeness(change_set, impact_report)
+
+    assert report.status == "potentially_incomplete"
+    assert len(report.affected_and_changed) == 1
+    assert report.affected_and_changed[0].path == "tests/test_task_service.py"
+    assert len(report.potentially_missing) == 1
+    assert report.potentially_missing[0].path == "docs/tasks.md"
+
+    # Both the 'test' (from affected_and_changed) and 'documentation'
+    # (from potentially_missing) relationship types must produce recommendations.
+    assert "Run related tests" in report.validation_recommendations
+    assert "Review affected documentation" in report.validation_recommendations
+
+
+
+def _analyze_demo_scenario(
+    tmp_path: Path,
+    base_revision: str,
+    target_revision: str,
+):
+    repository = Path(__file__).resolve().parents[2]
+    scenario_repo = tmp_path / "scenario-repository"
+
+    subprocess.run(
+        [
+            "git",
+            "clone",
+            "-q",
+            str(repository),
+            str(scenario_repo),
+        ],
+        check=True,
+    )
+
+    _git(scenario_repo, "checkout", "-q", target_revision)
+
+    change_set = extract_changed_files(
+        str(scenario_repo),
+        base_revision,
+        target_revision,
+    )
+    impact_report = discover_relationships(
+        str(scenario_repo),
+        change_set,
+    )
+
+    return change_set, analyze_completeness(
+        change_set,
+        impact_report,
+    )
+
+
+def test_phase7_scenario_1_is_complete(tmp_path: Path) -> None:
+    change_set, report = _analyze_demo_scenario(
+        tmp_path,
+        "a72fbaa",
+        "8f6702a",
+    )
+
+    assert [changed.path for changed in change_set.files] == [
+        "demo-project/frontend/components/TaskList.jsx",
+    ]
+    assert report.status == "complete"
+    assert report.affected_and_changed == ()
+    assert report.potentially_missing == ()
+    assert report.validation_recommendations == ()
+
+
+def test_phase7_scenario_2_detects_missing_get_tasks_consumer(
+    tmp_path: Path,
+) -> None:
+    change_set, report = _analyze_demo_scenario(
+        tmp_path,
+        "3ae2d52",
+        "4e474a2",
+    )
+
+    assert [changed.path for changed in change_set.files] == [
+        "demo-project/backend/services/task_service.py",
+    ]
+    assert report.status == "potentially_incomplete"
+
+    assert len(report.potentially_missing) == 1
+
+    missing = report.potentially_missing[0]
+
+    assert missing.path == "demo-project/backend/api/tasks.py"
+    assert missing.relationship_types == ("reference",)
+    assert missing.reasons == ("References symbol(s): get_tasks",)
+    assert missing.confidences == ("medium",)
+
+    assert report.validation_recommendations == ( "Review affected source references", )
+
+
+def test_phase7_scenario_3_detects_documentation_and_api_collateral(
+    tmp_path: Path,
+) -> None:
+    change_set, report = _analyze_demo_scenario(
+        tmp_path,
+        "c95f100",
+        "4129143",
+    )
+
+    assert [changed.path for changed in change_set.files] == [
+        "demo-project/backend/api/tasks.py",
+    ]
+    assert report.status == "potentially_incomplete"
+
+    missing = {
+        artifact.path: artifact
+        for artifact in report.potentially_missing
+    }
+
+        
+    assert set(missing) == {
+        "README.md",
+        "demo-project/backend/main.py",
+    }
+
+    assert missing["README.md"].relationship_types == ("documentation",)
+    assert missing["README.md"].reasons == (
+        "Documentation explicitly references tasks, tasks.py",
+    )
+    assert missing["README.md"].confidences == ("medium",)
+
+    assert missing["demo-project/backend/main.py"].relationship_types == (
+        "reference",
+    )
+    assert missing["demo-project/backend/main.py"].reasons == (
+        "References symbol(s): list_tasks",
+    )
+    assert missing["demo-project/backend/main.py"].confidences == ("medium",)
+
+    assert report.validation_recommendations == (
+        "Review affected documentation",
+        "Review affected source references",
+    )
