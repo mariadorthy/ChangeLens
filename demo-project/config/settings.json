@@ -1,0 +1,4 @@
+{
+  "task_statuses": ["pending", "completed"],
+  "default_page_size": 20
+}

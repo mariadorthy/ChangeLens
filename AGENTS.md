@@ -22,5 +22,5 @@
 
 ## Scope discipline
 
-- GitHub integration, CI/CD, LLM integration, autonomous code modification, complex static analysis, multi-language support, authentication, and production deployment are out of Phase 1 scope.
-- Placeholder modules are acceptable in foundation phases, but they must not return fabricated analysis results.
+- GitHub integration, CI/CD, LLM integration, autonomous code modification, complex static analysis, multi-language support, authentication, and production deployment are outside the current project scope unless explicitly introduced in a later phase.
+- Placeholder modules must not return fabricated analysis results.
