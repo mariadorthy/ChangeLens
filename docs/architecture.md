@@ -227,14 +227,31 @@ and were verified using clean target-revision worktrees.
 
 The current verified project state includes:
 
+Run from the repository root using the backend virtual environment:
+
+```powershell
+.\backend\venv\Scripts\python.exe -m pytest -q
+```
+
 ```text
-python -m pytest -q
 40 passed, 1 pre-existing deprecation warning
+```
 
+```powershell
+cd frontend
 npm test
-9 tests passed
+```
 
+```text
+9 tests passed
+```
+
+```powershell
+cd frontend
 npm run build
+```
+
+```text
 successful
 ```
 

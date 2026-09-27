@@ -75,6 +75,8 @@ The recording should demonstrate:
 
 The actual narration and screen recording should remain in the video rather than being duplicated in this document.
 
+**Demo Video:** [Watch the ChangeLens Demo](https://canva.link/1f4i04vwug4stfc)
+
 ---
 
 ## Required Product Screenshots
@@ -201,7 +203,18 @@ Use only technologies actually present in the repository:
 
 ## IBM Bob Evidence
 
-IBM Bob 2.0 was used as a genuine development and verification assistant during the project.
+IBM Bob 2.0 was used as a genuine development and verification assistant
+throughout the ChangeLens workflow.
+
+Our use of IBM Bob covered:
+
+* repository and architecture review
+* testing and regression analysis
+* robustness review
+* focused production development
+* frontend usability improvement
+* documentation review and correction
+* final repository and submission-readiness verification
 
 ### Member 1 — Engineering workflow
 
@@ -212,41 +225,43 @@ Member 1 used IBM Bob for:
 3. Analyzer/backend robustness audit
 4. Focused production development and regression verification
 
-The testing sessions identified a meaningful edge case involving a co-deleted related artifact and additional missing regression coverage for multi-file completeness behavior. Focused regression tests were added to the existing analyzer test suite.
+The testing and robustness sessions identified missing regression coverage
+for multi-file completeness behavior. Focused regression tests were added
+to the existing analyzer test suite.
 
-The final development session identified a usability gap in `validation_recommendations`: recommendations were generated only from potentially missing artifacts, so a complete change with related artifacts could provide no validation guidance. A focused production improvement was implemented in `analyzer/completeness_analyzer/service.py` so recommendations are generated from both affected-and-changed and potentially-missing artifacts.
+The final development session identified a usability gap in
+`validation_recommendations`: recommendations were generated only from
+potentially missing artifacts, so a complete change with related artifacts
+could provide no validation guidance.
 
-Two new regression tests were added and one existing test was updated to verify the behavior. No unrelated refactoring, new dependency, or frontend change was introduced.
+A focused production improvement was implemented in
+`analyzer/completeness_analyzer/service.py` so recommendations are generated
+from both affected-and-changed and potentially-missing artifacts.
 
-Final verification after the development session:
+Two new regression tests were added and one existing test was updated to
+verify the behavior.
 
-* 40 backend/analyzer tests passed
-* 1 pre-existing Starlette/httpx deprecation warning
-* 9 frontend tests passed
-* frontend production build successful
-
-### Member 2 — Frontend and final repository workflow
+### Member 2 — Frontend and documentation workflow
 
 Member 2 used IBM Bob for:
 
 1. Documentation and developer-workflow investigation
 2. Focused frontend usability improvement
-3. Final documentation, repository, and submission-readiness verification
+3. Documentation correction
+4. Final repository and submission-readiness verification
 
-The frontend development session identified a small clarity issue in the
-existing `ArtifactCard`: confidence values were displayed as plain text and
-were not visually distinct from surrounding evidence text.
+The frontend development session identified a clarity issue in the existing
+`ArtifactCard`: confidence values were displayed as plain text and were not
+visually distinct from surrounding evidence text.
 
 The existing UI structure was retained. A focused confidence-badge treatment
 was added for `high`, `medium`, and `low` confidence values, with regression
 coverage for the rendered classes.
 
-The final verification session reviews documentation, test/build evidence,
+The final verification session reviewed documentation, test/build evidence,
 Bob session evidence, environment-file handling, ignored/generated files,
-and submission-readiness details against the actual repository state.
-
-Changes are only accepted when they are supported by the repository and
-verified project behavior.
+submission assets, and Git repository readiness against the actual
+repository state.
 
 ### Evidence
 
@@ -255,18 +270,20 @@ IBM Bob session reports and evidence are retained under:
 ```text
 bob_sessions/
 ├── member_1/
-│   ├── session_01/
-│   ├── session_02/
-│   ├── session_03/
-│   └── session_04/
+│   ├── session_01/   Architecture orientation
+│   ├── session_02/   Testing and regression
+│   ├── session_03/   Robustness audit
+│   └── session_04/   Focused production improvement
 └── member_2/
-    ├── session_01/
-    ├── session_02/
-    ├── session_03/
-    └── session_04/
+    ├── session_01/   Documentation investigation
+    ├── session_02/   Documentation correction
+    ├── session_03/   Frontend usability improvement
+    └── session_04/   Final repository and submission verification
 ```
+Each retained session report records the task, IBM Bob interaction, actual
+changes or findings, and verification results.
 
----
+No unsupported IBM Bob contribution or project capability is claimed.
 
 ## Final Submission Checklist
 
@@ -309,10 +326,10 @@ bob_sessions/
 
 ### Repository
 
-* [ ] `.gitignore` verified
-* [ ] `.env.example` verified
-* [ ] No secrets committed
-* [ ] Generated artifacts ignored
+* [x] `.gitignore` verified — `venv/`, `node_modules/`, `dist/`, `__pycache__/`, `.env` all ignored
+* [x] `.env.example` verified — contains no secrets or real values
+* [x] No secrets committed — confirmed
+* [x] Generated artifacts ignored — confirmed
 * [x] Documentation contains no outdated phase claims 
 * [x] Final tests rerun
 * [x] Final build rerun

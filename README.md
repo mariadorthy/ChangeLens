@@ -479,8 +479,15 @@ The latest verified project state is:
 
 ### Backend and analyzer
 
+Run from the repository root using the backend virtual environment:
+
+```powershell
+.\backend\venv\Scripts\python.exe -m pytest -q
+```
+
+Expected output:
+
 ```text
-python -m pytest -q
 40 passed, 1 pre-existing deprecation warning
 ```
 
@@ -570,7 +577,18 @@ Do not commit local `.env` files or secrets.
 ## IBM Bob
 
 IBM Bob 2.0 was used as a genuine development and verification assistant
-throughout the ChangeLens development workflow.
+throughout the ChangeLens workflow.
+
+Our use of IBM Bob covered four connected areas:
+
+* **Repository review** — understanding the existing architecture, repository
+  structure, relationships, and implementation before making changes
+* **Testing and verification** — identifying regression gaps, reviewing edge
+  cases, and validating behavior with the existing test suite
+* **Focused development** — implementing targeted improvements supported by
+  repository findings and adding regression coverage
+* **Documentation and submission review** — reviewing documentation,
+  repository hygiene, evidence organization, and final submission readiness
 
 ### Member 1 — Engineering workflow
 
@@ -597,13 +615,14 @@ from both affected-and-changed and potentially-missing artifacts.
 Two new regression tests were added and one existing test was updated to
 verify the behavior.
 
-### Member 2 — Frontend and final repository workflow
+### Member 2 — Frontend and documentation workflow
 
 Member 2 used IBM Bob for:
 
 1. Documentation and developer-workflow investigation
 2. Focused frontend usability improvement
-3. Final documentation, repository, and submission-readiness verification
+3. Documentation correction
+4. Final repository and submission-readiness verification
 
 In the frontend development session, IBM Bob identified a small clarity
 issue in the existing `ArtifactCard`: confidence values were displayed as
@@ -613,14 +632,14 @@ The existing UI structure was retained. A focused confidence-badge treatment
 was added for `high`, `medium`, and `low` confidence values, with regression
 coverage for the rendered classes.
 
-The final verification session is used to review the repository's
-documentation, test/build evidence, Bob session evidence, environment-file
-handling, ignored/generated files, and submission-readiness details against
-the actual repository state.
+The final verification session reviewed documentation, test/build evidence,
+Bob session evidence, environment-file handling, ignored/generated files,
+submission assets, and Git repository readiness against the actual
+repository state.
 
-Changes are only accepted when they are supported by the repository and
-verified project behavior. No speculative redesign or unsupported project
-claims are introduced.
+Changes were accepted only when supported by the repository and verified
+project behavior. No speculative redesign or unsupported project claims were
+introduced.
 
 ### Bob session evidence
 
@@ -629,22 +648,19 @@ Session reports and screenshots are retained under:
 ```text
 bob_sessions/
 ├── member_1/
-│   ├── session_01/
-│   ├── session_02/
-│   ├── session_03/
-│   └── session_04/
+│   ├── session_01/   Architecture orientation
+│   ├── session_02/   Testing and regression
+│   ├── session_03/   Robustness audit
+│   └── session_04/   Focused production improvement
 └── member_2/
-    ├── session_01/
-    ├── session_02/
-    ├── session_03/
-    └── session_04/
+    ├── session_01/   Documentation investigation
+    ├── session_02/   Documentation correction
+    ├── session_03/   Frontend usability improvement
+    └── session_04/   Final repository and submission verification
 ```
-IBM Bob was used throughout the ChangeLens development workflow, including
-repository understanding, regression-test development, robustness validation,
-focused production development, frontend usability improvement, and final
-documentation/repository verification.
 
----
+The retained session evidence documents the tasks given to IBM Bob, findings,
+implemented changes, and verification results.
 
 ## Team
 
@@ -673,8 +689,6 @@ The current project includes:
 * reproducibility verification
 * focused robustness regression coverage
 * a focused developer-facing completeness recommendation improvement
-
-Final verification includes:
 
 Final verification includes:
 
