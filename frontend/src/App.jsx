@@ -4,7 +4,7 @@ import { AnalysisReport } from './components/AnalysisReport.jsx'
 import logo from './assets/logo.png'
 
 const INITIAL_FORM = {
-  repository_path: '',
+  repository_url: '',
   base_revision: '',
   target_revision: '',
 }
@@ -77,32 +77,34 @@ export default function App() {
           <div>
             <h2>Analyze a change</h2>
             <p className="muted">
-              Give ChangeLens a repository and two Git revisions. It identifies
-              what changed, what is related, what was also updated, and what may
-              still need attention.
-            </p>
+  Give ChangeLens a public GitHub repository and two Git revisions.
+  It identifies what changed, what is related, what was also updated,
+  and what may still need attention.
+</p>
           </div>
         </div>
 
         <form className="analysis-form" onSubmit={handleSubmit}>
-             <div className="form-field">
-            <label htmlFor="repository_path">Repository Path</label>
-            <input
-              id="repository_path"
-              name="repository_path"
-              type="text"
-              value={form.repository_path}
-              onChange={handleChange}
-              placeholder="D:\projects\my-repository"
-              autoComplete="off"
-              disabled={loading}
-              aria-describedby="repository-path-help"
-              required
-            />
-            <span id="repository-path-help" className="field-help">
-              Local path to the Git repository that contains the change.
-            </span>
-          </div>
+            <div className="form-field">
+  <label htmlFor="repository_url">GitHub Repository</label>
+
+  <input
+    id="repository_url"
+    name="repository_url"
+    type="url"
+    value={form.repository_url}
+    onChange={handleChange}
+    placeholder="https://github.com/owner/repository"
+    autoComplete="off"
+    disabled={loading}
+    aria-describedby="repository-url-help"
+    required
+  />
+
+  <span id="repository-url-help" className="field-help">
+    Public GitHub repository containing the Git revisions.
+  </span>
+</div>
 
           <div className="revision-grid">
             <div className="form-field">

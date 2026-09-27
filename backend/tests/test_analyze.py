@@ -198,11 +198,13 @@ def test_analyze_rejects_missing_request_data() -> None:
     body = response.json()
 
     assert body["detail"]
-    assert {
+
+    fields = {
         error["loc"][-1]
         for error in body["detail"]
-    } == {
-        "repository_path",
+    }
+
+    assert fields == {
         "base_revision",
         "target_revision",
     }
